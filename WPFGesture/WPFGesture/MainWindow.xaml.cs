@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 
@@ -30,11 +31,9 @@ namespace WPFGesture
 
         private double cumulativeDeltaX;
         private double cumulativeDeltaY;
-        private double linearVelocity;
-        private double linearVelocitx;
+        private Vector linearVelocity;
 
-        private const double DeltaX = 50;
-        private const double DeltaY = 50;
+        private const int MinimumMoveDelta = 10;
         private const double LinearVelocityX = 0.04;
 
         public MainWindow()
@@ -44,7 +43,7 @@ namespace WPFGesture
 
         /// <summary>
         /// Use the ManipulationInertiaStarting event to set the desired deceleration value for the given manipulation behavior,
-        /// e.g., ExpansionBehaviour and RotationBehaviour.
+        /// e.g., ExpansionBehavior and RotationBehavior.
         /// After the ManipulationInertiaStarting is called,
         /// it will call ManipulationDelta until velocity becomes zero.
         /// Set initial velocity of the expansion behavior and desired deceleration here.
@@ -79,24 +78,43 @@ namespace WPFGesture
             cumulativeDeltaX = e.CumulativeManipulation.Translation.X;
             cumulativeDeltaY = e.CumulativeManipulation.Translation.Y;
 
-            //store value of linear velocity into horizontal direction
-            linearVelocity = e.Velocities.LinearVelocity.X;
-            //store value of linear velocity into vertical direction
-            linearVelocitx = e.Velocities.LinearVelocity.Y;
+            //store value of linear velocity
+            linearVelocity = e.Velocities.LinearVelocity;
         }
 
         private void MainWindow_OnManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
-            bool isRightToLeftSwipe = cumulativeDeltaX < 0;
+            Console.WriteLine($@"**cumulativeDeltaX = {cumulativeDeltaX}**");
+            Console.WriteLine($@"**cumulativeDeltaY = {cumulativeDeltaY}**");
+            Console.WriteLine($@"**linearVelocityX = {linearVelocity.X}**");
+            Console.WriteLine($@"**linearVelocityY = {linearVelocity.Y}**");
 
-            //check if this is swipe gesture
-            if (IsSwipeGesture(cumulativeDeltaX, cumulativeDeltaY, linearVelocity))
+            //Get the swipe gesture type
+            var swipeGesture = GetSwipeGesture(cumulativeDeltaX, cumulativeDeltaY, linearVelocity);
+
+            switch (swipeGesture)
             {
-                GestureText = isRightToLeftSwipe ? @"Swipe From Right To Left" : @"Swipe From Left To Right";
-            }
-            else
-            {
-                GestureText = @"Not a swipe Gesture";
+                case TouchGestureType.TouchGesture.None:
+                    GestureText = @"Not a swipe gesture";
+                    break;
+                case TouchGestureType.TouchGesture.Pinch:
+                    GestureText = @"Pinch gesture";
+                    break;
+                case TouchGestureType.TouchGesture.MoveUp:
+                    GestureText = @"Swipe form Down to Up";
+                    break;
+                case TouchGestureType.TouchGesture.MoveRight:
+                    GestureText = @"Swipe form Left to Right";
+                    break;
+                case TouchGestureType.TouchGesture.MoveDown:
+                    GestureText = @"Swipe form Up to Down";
+                    break;
+                case TouchGestureType.TouchGesture.MoveLeft:
+                    GestureText = @"Swipe form Right to Left";
+                    break;
+                default:
+                    GestureText = @"Not a swipe gesture";
+                    break;
             }
         }
 
@@ -108,13 +126,27 @@ namespace WPFGesture
         /// </summary>
         /// <param name="deltaX"></param>
         /// <param name="deltaY"></param>
-        /// <param name="linearY"></param>
+        /// <param name="linearVelocity"></param>
         /// <returns></returns>
-        private bool IsSwipeGesture(double deltaX, double deltaY, double linearY)
+        private TouchGestureType.TouchGesture GetSwipeGesture(double deltaX, double deltaY, Vector linearVelocity)
         {
-            bool result = Math.Abs(deltaY) <= DeltaY && Math.Abs(deltaX) >= DeltaX && Math.Abs(linearY) >= LinearVelocityX;
+            TouchGestureType.TouchGesture resultType = TouchGestureType.TouchGesture.None;
 
-            return result;
+            if (Math.Abs(deltaY) > MinimumMoveDelta && Math.Abs(deltaY) > Math.Abs(deltaX))
+            {
+                resultType = (deltaY > 0) ? TouchGestureType.TouchGesture.MoveDown : TouchGestureType.TouchGesture.MoveUp;
+            }
+
+            if (Math.Abs(deltaX) > MinimumMoveDelta && Math.Abs(deltaX) > Math.Abs(deltaY))
+            {
+                resultType = (deltaX > 0) ? TouchGestureType.TouchGesture.MoveRight : TouchGestureType.TouchGesture.MoveLeft;
+            }
+
+            return resultType;
+
+            //bool result = Math.Abs(deltaY) <= DeltaY && Math.Abs(deltaX) >= DeltaX && Math.Abs(linear) >= LinearVelocityX;
+
+            //return result;
         }
     }
 }
