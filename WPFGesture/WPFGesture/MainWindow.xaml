@@ -1,12 +1,23 @@
-﻿<Window x:Class="WPFGesture.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WPFGesture"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+﻿<Window
+    x:Class="WPFGesture.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:WPFGesture"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Gesture Example"
+    Width="525"
+    Height="350"
+    DataContext="{Binding RelativeSource={RelativeSource self}}"
+    IsManipulationEnabled="True"
+    WindowState="Maximized"
+    mc:Ignorable="d">
+    <StackPanel>
+        <TextBox
+            Padding="10"
+            HorizontalContentAlignment="Center"
+            VerticalContentAlignment="Center"
+            FontSize="22"
+            Text="{Binding Path=GestureText}" />
+    </StackPanel>
 </Window>
