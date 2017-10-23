@@ -10,9 +10,13 @@
     Height="350"
     DataContext="{Binding RelativeSource={RelativeSource self}}"
     IsManipulationEnabled="True"
+    ManipulationInertiaStarting="MainWindow_OnManipulationInertiaStarting"
+    ManipulationStarting="MainWindow_OnManipulationStarting"
+    ManipulationDelta="MainWindow_OnManipulationDelta"
+    ManipulationCompleted="MainWindow_OnManipulationCompleted"
     WindowState="Maximized"
     mc:Ignorable="d">
-    <StackPanel>
+    <StackPanel Background="AliceBlue">
         <TextBox
             Padding="10"
             HorizontalContentAlignment="Center"
