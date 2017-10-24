@@ -55,6 +55,7 @@ namespace WPFGesture
         public MainWindow()
         {
             InitializeComponent();
+
             tracker = new Dictionary<int, List<Point>>();
         }
 
