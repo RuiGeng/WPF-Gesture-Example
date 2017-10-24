@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 
@@ -35,6 +34,7 @@ namespace WPFGesture
 
         private const int MinimumMoveDelta = 10;
         private const double LinearVelocityX = 0.04;
+        private const double LinearVelocityY = 0.04;
 
         public MainWindow()
         {
@@ -72,6 +72,11 @@ namespace WPFGesture
             e.Handled = true;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MainWindow_OnManipulationDelta(object sender, ManipulationDeltaEventArgs e)
         {
             //store values of horizontal & vertical cumulative translation
@@ -82,39 +87,50 @@ namespace WPFGesture
             linearVelocity = e.Velocities.LinearVelocity;
         }
 
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void MainWindow_OnManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
-            Console.WriteLine($@"**cumulativeDeltaX = {cumulativeDeltaX}**");
-            Console.WriteLine($@"**cumulativeDeltaY = {cumulativeDeltaY}**");
-            Console.WriteLine($@"**linearVelocityX = {linearVelocity.X}**");
-            Console.WriteLine($@"**linearVelocityY = {linearVelocity.Y}**");
+            TouchGestureType.TouchGesture gesture;
 
             //Get the swipe gesture type
-            var swipeGesture = GetSwipeGesture(cumulativeDeltaX, cumulativeDeltaY, linearVelocity);
+            var isSwipeGesture = GetSwipeGesture(cumulativeDeltaX, cumulativeDeltaY, linearVelocity, out gesture);
 
-            switch (swipeGesture)
+            if (isSwipeGesture)
             {
-                case TouchGestureType.TouchGesture.None:
-                    GestureText = @"Not a swipe gesture";
-                    break;
-                case TouchGestureType.TouchGesture.Pinch:
-                    GestureText = @"Pinch gesture";
-                    break;
-                case TouchGestureType.TouchGesture.MoveUp:
-                    GestureText = @"Swipe form Down to Up";
-                    break;
-                case TouchGestureType.TouchGesture.MoveRight:
-                    GestureText = @"Swipe form Left to Right";
-                    break;
-                case TouchGestureType.TouchGesture.MoveDown:
-                    GestureText = @"Swipe form Up to Down";
-                    break;
-                case TouchGestureType.TouchGesture.MoveLeft:
-                    GestureText = @"Swipe form Right to Left";
-                    break;
-                default:
-                    GestureText = @"Not a swipe gesture";
-                    break;
+                switch (gesture)
+                {
+                    case TouchGestureType.TouchGesture.None:
+                        GestureText = @"Gesture None";
+                        break;
+
+                    case TouchGestureType.TouchGesture.Pinch:
+                        GestureText = @"Pinch gesture";
+                        break;
+
+                    case TouchGestureType.TouchGesture.MoveUp:
+                        GestureText = @"Swipe form Bottom to Top";
+                        break;
+
+                    case TouchGestureType.TouchGesture.MoveRight:
+                        GestureText = @"Swipe form Left to Right";
+                        break;
+
+                    case TouchGestureType.TouchGesture.MoveDown:
+                        GestureText = @"Swipe form Top to Bottom";
+                        break;
+
+                    case TouchGestureType.TouchGesture.MoveLeft:
+                        GestureText = @"Swipe form Right to Left";
+                        break;
+
+                    default:
+                        GestureText = @"Not a swipe gesture";
+                        break;
+                }
             }
         }
 
@@ -126,27 +142,77 @@ namespace WPFGesture
         /// </summary>
         /// <param name="deltaX"></param>
         /// <param name="deltaY"></param>
-        /// <param name="linearVelocity"></param>
+        /// <param name="velocity"></param>
+        /// <param name="gesture"></param>
         /// <returns></returns>
-        private TouchGestureType.TouchGesture GetSwipeGesture(double deltaX, double deltaY, Vector linearVelocity)
+        private bool GetSwipeGesture(
+            double deltaX,
+            double deltaY,
+            Vector velocity,
+            out TouchGestureType.TouchGesture gesture)
         {
-            TouchGestureType.TouchGesture resultType = TouchGestureType.TouchGesture.None;
+            bool isSwipeGesture = false;
 
-            if (Math.Abs(deltaY) > MinimumMoveDelta && Math.Abs(deltaY) > Math.Abs(deltaX))
+            gesture = TouchGestureType.TouchGesture.None;
+
+            if (Math.Abs(deltaY) > MinimumMoveDelta && Math.Abs(deltaY) > Math.Abs(deltaX) && Math.Abs(velocity.Y) >= LinearVelocityY)
             {
-                resultType = (deltaY > 0) ? TouchGestureType.TouchGesture.MoveDown : TouchGestureType.TouchGesture.MoveUp;
+                gesture = (deltaY > 0) ? TouchGestureType.TouchGesture.MoveDown : TouchGestureType.TouchGesture.MoveUp;
+                isSwipeGesture = true;
             }
 
-            if (Math.Abs(deltaX) > MinimumMoveDelta && Math.Abs(deltaX) > Math.Abs(deltaY))
+            if (Math.Abs(deltaX) > MinimumMoveDelta && Math.Abs(deltaX) > Math.Abs(deltaY) && Math.Abs(velocity.X) >= LinearVelocityX)
             {
-                resultType = (deltaX > 0) ? TouchGestureType.TouchGesture.MoveRight : TouchGestureType.TouchGesture.MoveLeft;
+                gesture = (deltaX > 0) ? TouchGestureType.TouchGesture.MoveRight : TouchGestureType.TouchGesture.MoveLeft;
+                isSwipeGesture = true;
             }
 
-            return resultType;
-
-            //bool result = Math.Abs(deltaY) <= DeltaY && Math.Abs(deltaX) >= DeltaX && Math.Abs(linear) >= LinearVelocityX;
-
-            //return result;
+            return isSwipeGesture;
         }
+
+        //private void MainWindow_OnStylusSystemGesture(object sender, StylusSystemGestureEventArgs e)
+        //{
+        //    var gesture = e.SystemGesture;
+
+        //    switch (gesture)
+        //    {
+        //        case SystemGesture.None:
+        //            GestureText = @"Gesture None";
+        //            break;
+        //        case SystemGesture.Tap:
+        //            GestureText = @"Gesture Tap";
+        //            break;
+        //        case SystemGesture.RightTap:
+        //            GestureText = @"Gesture RightTap";
+        //            break;
+        //        case SystemGesture.Drag:
+        //            GestureText = @"Gesture Drag";
+        //            break;
+        //        case SystemGesture.RightDrag:
+        //            GestureText = @"Gesture RightDrag";
+        //            break;
+        //        case SystemGesture.HoldEnter:
+        //            GestureText = @"Gesture HoldEnter";
+        //            break;
+        //        case SystemGesture.HoldLeave:
+        //            GestureText = @"Gesture HoldLeave";
+        //            break;
+        //        case SystemGesture.HoverEnter:
+        //            GestureText = @"Gesture HoverEnter";
+        //            break;
+        //        case SystemGesture.HoverLeave:
+        //            GestureText = @"Gesture HoverLeave";
+        //            break;
+        //        case SystemGesture.Flick:
+        //            GestureText = @"Gesture Flick";
+        //            break;
+        //        case SystemGesture.TwoFingerTap:
+        //            GestureText = @"Gesture TwoFingerTap";
+        //            break;
+        //        default:
+        //            GestureText = @"Gesture detected";
+        //            break;
+        //    }
+        //}
     }
 }
