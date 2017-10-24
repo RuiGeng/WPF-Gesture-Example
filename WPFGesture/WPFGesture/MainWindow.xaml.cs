@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
@@ -46,9 +47,15 @@ namespace WPFGesture
         private Point currentPoint;
         private readonly Stopwatch stopwatch = new Stopwatch();
 
+        /// <summary>
+        /// track the touches by device id
+        /// </summary>
+        private Dictionary<int, List<Point>> tracker;
+
         public MainWindow()
         {
             InitializeComponent();
+            tracker = new Dictionary<int, List<Point>>();
         }
 
         /// <summary>
@@ -78,6 +85,7 @@ namespace WPFGesture
         /// <param name="e"></param>
         private void MainWindow_OnManipulationStarting(object sender, ManipulationStartingEventArgs e)
         {
+            tracker.Clear();
             e.ManipulationContainer = this;
             e.Handled = true;
         }
@@ -95,6 +103,14 @@ namespace WPFGesture
 
             //store value of linear velocity
             linearVelocity = e.Velocities.LinearVelocity;
+
+
+            //store value of Touch Point
+            foreach (var m in e.Manipulators)
+            {
+                // track the touches
+                TrackTouch(m.Id, m.GetPosition(TheWindow));
+            }
         }
 
         /// <summary>
@@ -105,6 +121,14 @@ namespace WPFGesture
         private void MainWindow_OnManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
             TouchGestureType.TouchGesture gesture;
+
+            if (tracker.Count == 2)
+            {
+                // for now, assume it is a pinch/expand type
+                gesture = TouchGestureType.TouchGesture.Pinch;
+                GestureText = @"Gesture Pinch";
+                return;
+            }
 
             if (!isDoubleTap &&
                 GetSwipeGesture(cumulativeDeltaX, cumulativeDeltaY, linearVelocity, out gesture))
@@ -223,6 +247,22 @@ namespace WPFGesture
             {
 
             }
+        }
+
+        /// <summary>
+        /// Track the touch by device id
+        /// </summary>
+        /// <param name="deviceId">The device id</param>
+        /// <param name="point">The touch point</param>
+        public void TrackTouch(int deviceId, Point point)
+        {
+            if (!tracker.ContainsKey(deviceId))
+            {
+                tracker.Add(deviceId, new List<Point>());
+            }
+
+            tracker[deviceId].Add(point);
+            currentPoint = point;
         }
     }
 }

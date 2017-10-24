@@ -37,7 +37,7 @@
             /// <summary>
             /// Double Tap of screen
             /// </summary>
-            DoubleTap = 32
+            DoubleTap = 32,
         }
     }
 }
