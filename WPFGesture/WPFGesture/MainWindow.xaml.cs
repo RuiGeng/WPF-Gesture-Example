@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 
@@ -33,8 +34,17 @@ namespace WPFGesture
         private Vector linearVelocity;
 
         private const int MinimumMoveDelta = 10;
-        private const double LinearVelocityX = 0.04;
-        private const double LinearVelocityY = 0.04;
+        private const double LinearVelocity = 0.04;
+
+        private const double MaximumDoubleTapDistance = 20;
+
+        private const double MaximumDoubleTapInterval = 0.3;
+
+        private bool isDoubleTap;
+
+        private Point firstTap;
+        private Point currentPoint;
+        private readonly Stopwatch stopwatch = new Stopwatch();
 
         public MainWindow()
         {
@@ -96,10 +106,8 @@ namespace WPFGesture
         {
             TouchGestureType.TouchGesture gesture;
 
-            //Get the swipe gesture type
-            var isSwipeGesture = GetSwipeGesture(cumulativeDeltaX, cumulativeDeltaY, linearVelocity, out gesture);
-
-            if (isSwipeGesture)
+            if (!isDoubleTap &&
+                GetSwipeGesture(cumulativeDeltaX, cumulativeDeltaY, linearVelocity, out gesture))
             {
                 switch (gesture)
                 {
@@ -155,13 +163,13 @@ namespace WPFGesture
 
             gesture = TouchGestureType.TouchGesture.None;
 
-            if (Math.Abs(deltaY) > MinimumMoveDelta && Math.Abs(deltaY) > Math.Abs(deltaX) && Math.Abs(velocity.Y) >= LinearVelocityY)
+            if (Math.Abs(deltaY) > MinimumMoveDelta && Math.Abs(deltaY) > Math.Abs(deltaX) && Math.Abs(velocity.Y) >= LinearVelocity)
             {
                 gesture = (deltaY > 0) ? TouchGestureType.TouchGesture.MoveDown : TouchGestureType.TouchGesture.MoveUp;
                 isSwipeGesture = true;
             }
 
-            if (Math.Abs(deltaX) > MinimumMoveDelta && Math.Abs(deltaX) > Math.Abs(deltaY) && Math.Abs(velocity.X) >= LinearVelocityX)
+            if (Math.Abs(deltaX) > MinimumMoveDelta && Math.Abs(deltaX) > Math.Abs(deltaY) && Math.Abs(velocity.X) >= LinearVelocity)
             {
                 gesture = (deltaX > 0) ? TouchGestureType.TouchGesture.MoveRight : TouchGestureType.TouchGesture.MoveLeft;
                 isSwipeGesture = true;
@@ -170,49 +178,51 @@ namespace WPFGesture
             return isSwipeGesture;
         }
 
-        //private void MainWindow_OnStylusSystemGesture(object sender, StylusSystemGestureEventArgs e)
-        //{
-        //    var gesture = e.SystemGesture;
+        public bool IsDoubleTap(Point point)
+        {
+            currentPoint = point;
+            var withinRange = GetDistance(firstTap, point) < MaximumDoubleTapDistance;
 
-        //    switch (gesture)
-        //    {
-        //        case SystemGesture.None:
-        //            GestureText = @"Gesture None";
-        //            break;
-        //        case SystemGesture.Tap:
-        //            GestureText = @"Gesture Tap";
-        //            break;
-        //        case SystemGesture.RightTap:
-        //            GestureText = @"Gesture RightTap";
-        //            break;
-        //        case SystemGesture.Drag:
-        //            GestureText = @"Gesture Drag";
-        //            break;
-        //        case SystemGesture.RightDrag:
-        //            GestureText = @"Gesture RightDrag";
-        //            break;
-        //        case SystemGesture.HoldEnter:
-        //            GestureText = @"Gesture HoldEnter";
-        //            break;
-        //        case SystemGesture.HoldLeave:
-        //            GestureText = @"Gesture HoldLeave";
-        //            break;
-        //        case SystemGesture.HoverEnter:
-        //            GestureText = @"Gesture HoverEnter";
-        //            break;
-        //        case SystemGesture.HoverLeave:
-        //            GestureText = @"Gesture HoverLeave";
-        //            break;
-        //        case SystemGesture.Flick:
-        //            GestureText = @"Gesture Flick";
-        //            break;
-        //        case SystemGesture.TwoFingerTap:
-        //            GestureText = @"Gesture TwoFingerTap";
-        //            break;
-        //        default:
-        //            GestureText = @"Gesture detected";
-        //            break;
-        //    }
-        //}
+            TimeSpan elapsed = stopwatch.Elapsed;
+            var withinTime = elapsed != TimeSpan.Zero &&
+                              elapsed < TimeSpan.FromSeconds(MaximumDoubleTapInterval);
+
+            firstTap = point;
+            stopwatch.Restart();
+
+            return withinRange && withinTime;
+        }
+
+        /// <summary>
+        /// Calculate the distance between two points
+        /// </summary>
+        /// <param name="p1">first point</param>
+        /// <param name="p2">second point</param>
+        /// <returns>the distance between the two points</returns>
+        private double GetDistance(Point p1, Point p2)
+        {
+            double deltaX = p1.X - p2.X;
+            double deltaY = p1.Y - p2.Y;
+            return Math.Sqrt((deltaX * deltaX) + (deltaY * deltaY));
+        }
+
+        private void MainWindow_OnManipulationStarted(object sender, ManipulationStartedEventArgs e)
+        {
+            isDoubleTap = false;
+
+            if (IsDoubleTap(e.ManipulationOrigin))
+            {
+                GestureText = @"Double Tap gesture";
+                isDoubleTap = true;
+            }
+        }
+
+        private void MainWindow_OnStylusSystemGesture(object sender, StylusSystemGestureEventArgs e)
+        {
+            if (e.SystemGesture == SystemGesture.Tap)
+            {
+
+            }
+        }
     }
 }

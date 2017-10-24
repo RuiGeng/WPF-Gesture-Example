@@ -33,6 +33,11 @@
             /// towards left of screen
             /// </summary>
             MoveLeft = 16,
+
+            /// <summary>
+            /// Double Tap of screen
+            /// </summary>
+            DoubleTap = 32
         }
     }
 }
