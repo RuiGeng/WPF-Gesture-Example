@@ -50,7 +50,7 @@ namespace WPFGesture
         /// <summary>
         /// track the touches by device id
         /// </summary>
-        private Dictionary<int, List<Point>> tracker;
+        private readonly Dictionary<int, List<Point>> tracker;
 
         public MainWindow()
         {
@@ -103,7 +103,6 @@ namespace WPFGesture
 
             //store value of linear velocity
             linearVelocity = e.Velocities.LinearVelocity;
-
 
             //store value of Touch Point
             foreach (var m in e.Manipulators)
@@ -245,7 +244,6 @@ namespace WPFGesture
         {
             if (e.SystemGesture == SystemGesture.Tap)
             {
-
             }
         }
 
