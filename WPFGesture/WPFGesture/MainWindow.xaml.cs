@@ -123,8 +123,6 @@ namespace WPFGesture
 
             if (tracker.Count == 2)
             {
-                // for now, assume it is a pinch/expand type
-                gesture = TouchGestureType.TouchGesture.Pinch;
                 GestureText = @"Gesture Pinch";
                 return;
             }
@@ -134,14 +132,6 @@ namespace WPFGesture
             {
                 switch (gesture)
                 {
-                    case TouchGestureType.TouchGesture.None:
-                        GestureText = @"Gesture None";
-                        break;
-
-                    case TouchGestureType.TouchGesture.Pinch:
-                        GestureText = @"Pinch gesture";
-                        break;
-
                     case TouchGestureType.TouchGesture.MoveUp:
                         GestureText = @"Swipe form Bottom to Top";
                         break;
@@ -242,8 +232,10 @@ namespace WPFGesture
 
         private void MainWindow_OnStylusSystemGesture(object sender, StylusSystemGestureEventArgs e)
         {
+            //May be better to handle tap gesture here
             if (e.SystemGesture == SystemGesture.Tap)
             {
+                GestureText = @"Tap gesture";
             }
         }
 
