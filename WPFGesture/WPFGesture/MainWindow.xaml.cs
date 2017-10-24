@@ -120,7 +120,7 @@ namespace WPFGesture
         /// <param name="e"></param>
         private void MainWindow_OnManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
         {
-            TouchGestureType.TouchGesture gesture;
+            TouchGestureType gesture;
 
             if (tracker.Count == 2)
             {
@@ -133,19 +133,19 @@ namespace WPFGesture
             {
                 switch (gesture)
                 {
-                    case TouchGestureType.TouchGesture.MoveUp:
+                    case TouchGestureType.MoveBottomToUp:
                         GestureText = @"Swipe form Bottom to Top";
                         break;
 
-                    case TouchGestureType.TouchGesture.MoveRight:
+                    case TouchGestureType.MoveLeftToRight:
                         GestureText = @"Swipe form Left to Right";
                         break;
 
-                    case TouchGestureType.TouchGesture.MoveDown:
+                    case TouchGestureType.MoveTopToBottom:
                         GestureText = @"Swipe form Top to Bottom";
                         break;
 
-                    case TouchGestureType.TouchGesture.MoveLeft:
+                    case TouchGestureType.MoveRightToLeft:
                         GestureText = @"Swipe form Right to Left";
                         break;
 
@@ -171,21 +171,21 @@ namespace WPFGesture
             double deltaX,
             double deltaY,
             Vector velocity,
-            out TouchGestureType.TouchGesture gesture)
+            out TouchGestureType gesture)
         {
             bool isSwipeGesture = false;
 
-            gesture = TouchGestureType.TouchGesture.None;
+            gesture = TouchGestureType.None;
 
             if (Math.Abs(deltaY) > MinimumMoveDelta && Math.Abs(deltaY) > Math.Abs(deltaX) && Math.Abs(velocity.Y) >= LinearVelocity)
             {
-                gesture = (deltaY > 0) ? TouchGestureType.TouchGesture.MoveDown : TouchGestureType.TouchGesture.MoveUp;
+                gesture = (deltaY > 0) ? TouchGestureType.MoveTopToBottom : TouchGestureType.MoveBottomToUp;
                 isSwipeGesture = true;
             }
 
             if (Math.Abs(deltaX) > MinimumMoveDelta && Math.Abs(deltaX) > Math.Abs(deltaY) && Math.Abs(velocity.X) >= LinearVelocity)
             {
-                gesture = (deltaX > 0) ? TouchGestureType.TouchGesture.MoveRight : TouchGestureType.TouchGesture.MoveLeft;
+                gesture = (deltaX > 0) ? TouchGestureType.MoveLeftToRight : TouchGestureType.MoveRightToLeft;
                 isSwipeGesture = true;
             }
 
