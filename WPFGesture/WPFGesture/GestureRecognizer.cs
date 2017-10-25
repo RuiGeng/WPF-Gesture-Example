@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Windows;
-
-namespace WPFGesture
+﻿namespace WPFGesture
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Windows;
+
     public enum TouchGestureType
     {
         /// <summary>
@@ -42,16 +42,6 @@ namespace WPFGesture
     public class GestureRecognizer
     {
         /// <summary>
-        /// minimum movement to be recognized as a gesture
-        /// </summary>
-        private const int MinimumMove = 10;
-
-        /// <summary>
-        /// minimum angle to be recognized as non-axial swipe
-        /// </summary>
-        private const int MinimumAngle = 6;
-
-        /// <summary>
         /// maximum distance between two points to be considered double tap
         /// </summary>
         private const double MaximumDoubleTapDistance = 20;
@@ -62,14 +52,19 @@ namespace WPFGesture
         private const double MaximumDoubleTapInterval = 0.3;
 
         /// <summary>
+        /// minimum angle to be recognized as non-axial swipe
+        /// </summary>
+        private const int MinimumAngle = 6;
+
+        /// <summary>
+        /// minimum movement to be recognized as a gesture
+        /// </summary>
+        private const int MinimumMove = 10;
+
+        /// <summary>
         /// stop watch for recognizing double tap
         /// </summary>
         private readonly Stopwatch stopwatch = new Stopwatch();
-
-        /// <summary>
-        /// track the touches by device id
-        /// </summary>
-        private Dictionary<int, List<Point>> tracker;
 
         /// <summary>
         /// hold the first tap for double tap
@@ -77,27 +72,15 @@ namespace WPFGesture
         private Point firstTap;
 
         /// <summary>
-        /// The single touch action current point
+        /// track the touches by device id
         /// </summary>
-        private Point currentPoint;
+        private readonly Dictionary<int, List<Point>> pointTracker;
 
-
-        /// <summary>
-        /// Gets the maximum right position of the manipulation
-        /// </summary>
-        public double MaxRightPosition
+        public GestureRecognizer()
         {
-            get;
-            internal set;
-        }
-
-        /// <summary>
-        /// Gets the maximum left position of the manipulation
-        /// </summary>
-        public double MaxLeftPosition
-        {
-            get;
-            internal set;
+            pointTracker = new Dictionary<int, List<Point>>();
+            firstTap = new Point();
+            CurrentPoint = new Point();
         }
 
         /// <summary>
@@ -105,14 +88,76 @@ namespace WPFGesture
         /// </summary>
         public TouchGestureType Gesture => InterpretGesture();
 
-        public GestureRecognizer()
+        /// <summary>
+        /// Gets the maximum left position of the manipulation
+        /// </summary>
+        public double MaxLeftPosition { get; private set; }
+
+        /// <summary>
+        /// Gets the maximum right position of the manipulation
+        /// </summary>
+        public double MaxRightPosition { get; private set; }
+
+        public Point CurrentPoint { get; private set; }
+
+        /// <summary>
+        /// Clear the tracked touches
+        /// </summary>
+        public void ClearTrackTouch()
         {
-            tracker = new Dictionary<int, List<Point>>();
-            firstTap = new Point();
-            currentPoint = new Point();
+            pointTracker.Clear();
+            MaxLeftPosition = 0;
+            MaxRightPosition = 0;
         }
 
+        /// <summary>
+        /// Check if it is a double tap at the point
+        /// </summary>
+        /// <param name="point">The touch point</param>
+        /// <returns>True if it is a double tap, false otherwise</returns>
+        public bool IsDoubleTap(Point point)
+        {
+            CurrentPoint = point;
+            bool withinRange = GetDistance(firstTap, point) < MaximumDoubleTapDistance;
 
+            TimeSpan elapsed = stopwatch.Elapsed;
+            bool withinTime = elapsed != TimeSpan.Zero &&
+                              elapsed < TimeSpan.FromSeconds(MaximumDoubleTapInterval);
+
+            firstTap = point;
+            stopwatch.Restart();
+
+            return withinRange && withinTime;
+        }
+
+        /// <summary>
+        /// Track the touch by device id
+        /// </summary>
+        /// <param name="deviceId">The device id</param>
+        /// <param name="point">The touch point</param>
+        public void TrackTouch(int deviceId, Point point)
+        {
+            if (!pointTracker.ContainsKey(deviceId))
+            {
+                pointTracker.Add(deviceId, new List<Point>());
+            }
+
+            pointTracker[deviceId].Add(point);
+            CurrentPoint = point;
+        }
+
+        /// <summary>
+        /// Calculate the distance between two points
+        /// </summary>
+        /// <param name="p1">first point</param>
+        /// <param name="p2">second point</param>
+        /// <returns>the distance between the two points</returns>
+        private double GetDistance(Point p1, Point p2)
+        {
+            double deltaX = p1.X - p2.X;
+            double deltaY = p1.Y - p2.Y;
+            return Math.Sqrt((deltaX * deltaX) + (deltaY * deltaY));
+        }
 
         /// <summary>
         /// Recognize the gesture by the tracked data
@@ -122,14 +167,14 @@ namespace WPFGesture
         {
             TouchGestureType resultType = TouchGestureType.None;
 
-            if (tracker.Count == 2)
+            if (pointTracker.Count == 2)
             {
                 // for now, assume it is a pinch/expand type
                 resultType = TouchGestureType.Pinch;
             }
-            else if (tracker.Count == 1)
+            else if (pointTracker.Count == 1)
             {
-                IEnumerator it = tracker.Values.GetEnumerator();
+                IEnumerator it = pointTracker.Values.GetEnumerator();
                 if (!it.MoveNext())
                 {
                     resultType = TouchGestureType.None;
@@ -139,35 +184,38 @@ namespace WPFGesture
                     List<Point> points = (List<Point>)it.Current;
 
                     // get first and last point from the list of points
-                    Point firstPoint = (Point)points[0];
-                    Point lastPoint = (Point)points[points.Count - 1];
-
-                    // horizontal and vertical movement
-                    double deltaX = lastPoint.X - firstPoint.X;
-                    double deltaY = lastPoint.Y - firstPoint.Y;
-
-                    ////  Update the left & right moving edge
-                    if (deltaX > 0 && deltaX > MaxRightPosition)
+                    if (points != null)
                     {
-                        MaxRightPosition = deltaX;
-                    }
-                    else if (deltaX < 0 && deltaX < MaxLeftPosition)
-                    {
-                        MaxLeftPosition = deltaX;
-                    }
+                        Point firstPoint = points[0];
+                        Point lastPoint = points[points.Count - 1];
 
-                    // check if distance travelled on X and Y axis is more the minimum 
-                    // gesture length specified above
-                    if (Math.Abs(deltaY) > MinimumMove && Math.Abs(deltaY) > Math.Abs(deltaX))
-                    {
-                        // if yDiff is negative, we moved upwards
-                        resultType = (deltaY > 0) ? TouchGestureType.MoveBottomToUp : TouchGestureType.MoveTopToBottom;
-                    }
+                        // horizontal and vertical movement
+                        double deltaX = lastPoint.X - firstPoint.X;
+                        double deltaY = lastPoint.Y - firstPoint.Y;
 
-                    if (Math.Abs(deltaX) > MinimumMove && Math.Abs(deltaX) > Math.Abs(deltaY))
-                    {
-                        // if xDiff is negative, we moved left
-                        resultType = (deltaX > 0) ? TouchGestureType.MoveLeftToRight : TouchGestureType.MoveRightToLeft;
+                        // Update the left & right moving edge
+                        if (deltaX > 0 && deltaX > MaxRightPosition)
+                        {
+                            MaxRightPosition = deltaX;
+                        }
+                        else if (deltaX < 0 && deltaX < MaxLeftPosition)
+                        {
+                            MaxLeftPosition = deltaX;
+                        }
+
+                        // check if distance traveled on X and Y axis is more the minimum
+                        // gesture length specified above
+                        if (Math.Abs(deltaY) > MinimumMove && Math.Abs(deltaY) > Math.Abs(deltaX))
+                        {
+                            // if yDiff is negative, we moved upwards
+                            resultType = (deltaY > 0) ? TouchGestureType.MoveBottomToUp : TouchGestureType.MoveTopToBottom;
+                        }
+
+                        if (Math.Abs(deltaX) > MinimumMove && Math.Abs(deltaX) > Math.Abs(deltaY))
+                        {
+                            // if xDiff is negative, we moved left
+                            resultType = (deltaX > 0) ? TouchGestureType.MoveLeftToRight : TouchGestureType.MoveRightToLeft;
+                        }
                     }
                 }
             }

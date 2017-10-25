@@ -1,16 +1,20 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Input;
-
-namespace WPFGesture
+﻿namespace WPFGesture
 {
+    using System;
+    using System.Windows;
+    using System.Windows.Input;
+
     public class GestureContainer
     {
         private readonly UIElement uiElement;
+        private readonly IGestureRecognizer gestureRecognizer;
+        private bool isDoubleTapping;
+        private Point originalPoint;
 
-        public GestureContainer(UIElement uiElement)
+        public GestureContainer(UIElement uiElement, IGestureRecognizer gestureRecognizer)
         {
             this.uiElement = uiElement;
+            this.gestureRecognizer = gestureRecognizer;
         }
 
         public void EnableGestureRecognizing()
@@ -61,29 +65,76 @@ namespace WPFGesture
             }
         }
 
-        private void UiElementOnManipulationCompleted(object sender, ManipulationCompletedEventArgs args)
+        private void UiElementOnManipulationCompleted(object sender, ManipulationCompletedEventArgs e)
+        {
+            var gesture = gestureRecognizer.Gesture;
+
+            if (isDoubleTapping && Math.Abs(e.TotalManipulation.Translation.X) < 0.02)
+            {
+                //Double Touch logic
+            }
+            else if (gesture == TouchGestureType.MoveRightToLeft ||
+                     gesture == TouchGestureType.MoveLeftToRight)
+            {
+                //Swipe logic
+            }
+            else if (gestureRecognizer.Gesture == TouchGestureType.None)
+            {
+                //Single Touch logic
+            }
+        }
+
+        private void UiElementOnManipulationDelta(object sender, ManipulationDeltaEventArgs e)
+        {
+            foreach (var m in e.Manipulators)
+            {
+                gestureRecognizer.TrackTouch(m.Id, m.GetPosition(uiElement));
+            }
+
+            switch (gestureRecognizer.Gesture)
+            {
+                case TouchGestureType.Pinch:
+                    break;
+
+                case TouchGestureType.MoveRightToLeft:
+                    break;
+
+                case TouchGestureType.MoveLeftToRight:
+                    break;
+
+                case TouchGestureType.MoveBottomToUp:
+                    break;
+
+                case TouchGestureType.MoveTopToBottom:
+                    break;
+            }
+        }
+
+        private void UiElementOnManipulationStarted(object sender, ManipulationStartedEventArgs e)
+        {
+            isDoubleTapping = false;
+
+            if (uiElement != null)
+            {
+                originalPoint = uiElement.PointToScreen(e.ManipulationOrigin);
+            }
+
+            if (gestureRecognizer.IsDoubleTap(originalPoint))
+            {
+                isDoubleTapping = true;
+            }
+        }
+
+        private void UiElementOnManipulationInertiaStarting(object sender, ManipulationInertiaStartingEventArgs e)
         {
             throw new NotImplementedException();
         }
 
-        private void UiElementOnManipulationDelta(object sender, ManipulationDeltaEventArgs args)
+        private void UiElementOnManipulationStarting(object sender, ManipulationStartingEventArgs e)
         {
-            throw new NotImplementedException();
-        }
-
-        private void UiElementOnManipulationStarted(object sender, ManipulationStartedEventArgs args)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void UiElementOnManipulationInertiaStarting(object sender, ManipulationInertiaStartingEventArgs args)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void UiElementOnManipulationStarting(object sender, ManipulationStartingEventArgs args)
-        {
-            throw new NotImplementedException();
+            gestureRecognizer.ClearTrackTouch();
+            e.ManipulationContainer = uiElement;
+            e.Handled = true;
         }
     }
 }
