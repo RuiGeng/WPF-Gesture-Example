@@ -12,7 +12,7 @@ namespace WPFGesture
         private bool isDoubleTapping;
         private Point originalPoint;
 
-        public Action DoubleTouchAction;
+        public Action DoubleTapAction;
         public Action PinchAction;
         public Action SingleTapAction;
         public Action SwipDownAction;
@@ -83,21 +83,28 @@ namespace WPFGesture
 
             if (isDoubleTapping && Math.Abs(e.TotalManipulation.Translation.X) < 0.02)
             {
+                PinchAction?.Invoke();
             }
+
             else if (gesture == TouchGestureType.MoveRightToLeft)
             {
+                SwipLeftAction?.Invoke();
             }
             else if (gesture == TouchGestureType.MoveLeftToRight)
             {
+                SwipRigthAction?.Invoke();
             }
             else if (gesture == TouchGestureType.MoveBottomToUp)
             {
+                SwipUpAction?.Invoke();
             }
             else if (gesture == TouchGestureType.MoveTopToBottom)
             {
+                SwipDownAction?.Invoke();
             }
             else if (gesture == TouchGestureType.SingleTap)
             {
+                SingleTapAction?.Invoke();
             }
         }
 
@@ -112,10 +119,15 @@ namespace WPFGesture
             isDoubleTapping = false;
 
             if (uiElement != null)
+            {
                 originalPoint = uiElement.PointToScreen(e.ManipulationOrigin);
+            }
 
             if (gestureRecognizer.IsDoubleTap(originalPoint))
+            {
                 isDoubleTapping = true;
+                DoubleTapAction?.Invoke();
+            }
         }
 
 
