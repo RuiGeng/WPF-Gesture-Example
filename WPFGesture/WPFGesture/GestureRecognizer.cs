@@ -9,9 +9,14 @@
     public enum TouchGestureType
     {
         /// <summary>
-        /// Not a manipulation gesture
+        /// None
         /// </summary>
         None,
+
+        /// <summary>
+        /// 
+        /// </summary>
+        SingleTap,
 
         /// <summary>
         /// two touch points moved closer
@@ -169,7 +174,6 @@
 
             if (pointTracker.Count == 2)
             {
-                // for now, assume it is a pinch/expand type
                 resultType = TouchGestureType.Pinch;
             }
             else if (pointTracker.Count == 1)
@@ -177,7 +181,7 @@
                 IEnumerator it = pointTracker.Values.GetEnumerator();
                 if (!it.MoveNext())
                 {
-                    resultType = TouchGestureType.None;
+                    resultType = TouchGestureType.SingleTap;
                 }
                 else
                 {
