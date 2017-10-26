@@ -10,13 +10,6 @@
     Width="525"
     Height="350"
     DataContext="{Binding RelativeSource={RelativeSource self}}"
-    IsManipulationEnabled="True"
-    ManipulationCompleted="MainWindow_OnManipulationCompleted"
-    ManipulationDelta="MainWindow_OnManipulationDelta"
-    ManipulationInertiaStarting="MainWindow_OnManipulationInertiaStarting"
-    ManipulationStarted="MainWindow_OnManipulationStarted"
-    ManipulationStarting="MainWindow_OnManipulationStarting"
-    StylusSystemGesture="MainWindow_OnStylusSystemGesture"
     WindowState="Maximized"
     mc:Ignorable="d">
     <StackPanel Background="AliceBlue">

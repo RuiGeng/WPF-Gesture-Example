@@ -1,9 +1,9 @@
-﻿using System;
-using System.Windows;
-using System.Windows.Input;
-
-namespace WPFGesture
+﻿namespace WPFGesture
 {
+    using System;
+    using System.Windows;
+    using System.Windows.Input;
+
     public class GestureContainer : IGestureContainer
     {
         private readonly UIElement uiElement;
@@ -12,13 +12,13 @@ namespace WPFGesture
         private bool isDoubleTapping;
         private Point originalPoint;
 
-        public Action DoubleTapAction;
+        public Action DoubleTapAction { get; set; }
         public Action PinchAction;
         public Action SingleTapAction;
-        public Action SwipDownAction;
-        public Action SwipLeftAction;
-        public Action SwipRigthAction;
-        public Action SwipUpAction;
+        public Action SwipeDownAction;
+        public Action SwipeLeftAction;
+        public Action SwipeRightAction;
+        public Action SwipeUpAction;
 
         public GestureContainer(UIElement uiElement)
         {
@@ -85,22 +85,21 @@ namespace WPFGesture
             {
                 PinchAction?.Invoke();
             }
-
             else if (gesture == TouchGestureType.MoveRightToLeft)
             {
-                SwipLeftAction?.Invoke();
+                SwipeLeftAction?.Invoke();
             }
             else if (gesture == TouchGestureType.MoveLeftToRight)
             {
-                SwipRigthAction?.Invoke();
+                SwipeRightAction?.Invoke();
             }
             else if (gesture == TouchGestureType.MoveBottomToUp)
             {
-                SwipUpAction?.Invoke();
+                SwipeUpAction?.Invoke();
             }
             else if (gesture == TouchGestureType.MoveTopToBottom)
             {
-                SwipDownAction?.Invoke();
+                SwipeDownAction?.Invoke();
             }
             else if (gesture == TouchGestureType.SingleTap)
             {
@@ -130,22 +129,21 @@ namespace WPFGesture
             }
         }
 
-
         private void UiElementOnManipulationInertiaStarting(object sender, ManipulationInertiaStartingEventArgs e)
         {
             // Provides data for the ManipulationInertiaStarting event.
 
-            //// Decrease the velocity of the Rectangle's movement by 
+            //// Decrease the velocity of the Rectangle's movement by
             //// 10 inches per second every second.
             //// (10 inches * 96 pixels per inch / 1000ms^2)
             //e.TranslationBehavior.DesiredDeceleration = 10.0 * 96.0 / (1000.0 * 1000.0);
 
-            //// Decrease the velocity of the Rectangle's resizing by 
+            //// Decrease the velocity of the Rectangle's resizing by
             //// 0.1 inches per second every second.
             //// (0.1 inches * 96 pixels per inch / (1000ms^2)
             //e.ExpansionBehavior.DesiredDeceleration = 0.1 * 96 / (1000.0 * 1000.0);
 
-            //// Decrease the velocity of the Rectangle's rotation rate by 
+            //// Decrease the velocity of the Rectangle's rotation rate by
             //// 2 rotations per second every second.
             //// (2 * 360 degrees / (1000ms^2)
             //e.RotationBehavior.DesiredDeceleration = 720 / (1000.0 * 1000.0);
