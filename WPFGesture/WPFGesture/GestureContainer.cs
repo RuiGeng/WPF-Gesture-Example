@@ -13,12 +13,12 @@
         private Point originalPoint;
 
         public Action DoubleTapAction { get; set; }
-        public Action PinchAction;
-        public Action SingleTapAction;
-        public Action SwipeDownAction;
-        public Action SwipeLeftAction;
-        public Action SwipeRightAction;
-        public Action SwipeUpAction;
+        public Action PinchAction { get; set; }
+        public Action SingleTapAction { get; set; }
+        public Action SwipeDownAction { get; set; }
+        public Action SwipeLeftAction { get; set; }
+        public Action SwipeRightAction { get; set; }
+        public Action SwipeUpAction { get; set; }
 
         public GestureContainer(UIElement uiElement)
         {

@@ -212,7 +212,7 @@
                         if (Math.Abs(deltaY) > MinimumMove && Math.Abs(deltaY) > Math.Abs(deltaX))
                         {
                             // if yDiff is negative, we moved upwards
-                            resultType = (deltaY > 0) ? TouchGestureType.MoveBottomToUp : TouchGestureType.MoveTopToBottom;
+                            resultType = (deltaY > 0) ? TouchGestureType.MoveTopToBottom : TouchGestureType.MoveBottomToUp;
                         }
 
                         if (Math.Abs(deltaX) > MinimumMove && Math.Abs(deltaX) > Math.Abs(deltaY))
