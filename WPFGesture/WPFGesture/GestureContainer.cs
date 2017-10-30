@@ -1,4 +1,6 @@
-﻿namespace WPFGesture
+﻿using System.Collections.Generic;
+
+namespace WPFGesture
 {
     using System;
     using System.Windows;
