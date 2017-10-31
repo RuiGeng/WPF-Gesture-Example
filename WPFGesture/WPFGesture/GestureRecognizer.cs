@@ -49,12 +49,12 @@
         /// <summary>
         /// maximum distance between two points to be considered double tap
         /// </summary>
-        private const double MaximumDoubleTapDistance = 20;
+        private const double MaximumDoubleTapDistance = 30;
 
         /// <summary>
         /// maximum time interval between two touches to be considered double tap
         /// </summary>
-        private const double MaximumDoubleTapInterval = 0.3;
+        private const double MaximumDoubleTapInterval = 0.5;
 
         /// <summary>
         /// minimum angle to be recognized as non-axial swipe

@@ -12,7 +12,6 @@ namespace WPFGesture
 
         private GestureRecognizer gestureRecognizer;
         private bool isDoubleTapping;
-        private Point originalPoint;
 
         public Action DoubleTapAction { get; set; }
         public Action PinchAction { get; set; }
@@ -119,12 +118,7 @@ namespace WPFGesture
         {
             isDoubleTapping = false;
 
-            if (uiElement != null)
-            {
-                originalPoint = uiElement.PointToScreen(e.ManipulationOrigin);
-            }
-
-            if (gestureRecognizer.IsDoubleTap(originalPoint))
+            if (gestureRecognizer.IsDoubleTap(e.ManipulationOrigin))
             {
                 isDoubleTapping = true;
                 DoubleTapAction?.Invoke();
